@@ -268,7 +268,10 @@ def _plot_at_fixed_alpha_and_age(ax, index1, index2, alpha_fe=0.0, age=13.0, alp
     alpha_fe_ind=get_numpy_indices_for_params(alpha_fe=alpha_fe)
     age_ind=get_numpy_indices_for_params(age=age)
 
-    
+    #Useful for seeing how the model parameters move
+    solar_alpha_fe_ind=get_numpy_indices_for_params(alpha_fe=0.0)
+    ten_Gyr_age_ind=get_numpy_indices_for_params(age=10.0)
+    solar_metallicity_ind=get_numpy_indices_for_params(Z=0.0)
 
     
     index1=np.transpose(index1.reshape(4, 6, 20), (0, 2, 1))
@@ -287,7 +290,7 @@ def _plot_at_fixed_alpha_and_age(ax, index1, index2, alpha_fe=0.0, age=13.0, alp
             ax.plot(index1[:, age_ind, i], index2[:, age_ind, i], c="grey")
         ax.plot(index1[:, age_ind, -1], index2[:, age_ind, -1], c="grey")
 
-        #ax.plot(index1[solar_alpha_fe_ind, :, solar_metallicity_ind], index2[solar_alpha_fe_ind, :, solar_metallicity_ind], c="b", linestyle="dotted", marker="s")
+        ax.plot(index1[solar_alpha_fe_ind, :, solar_metallicity_ind], index2[solar_alpha_fe_ind, :, solar_metallicity_ind], c="b", linestyle="dotted", marker="s")
 
     if age_grid:
         for i in range(0, 6, 1):
