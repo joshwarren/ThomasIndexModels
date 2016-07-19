@@ -326,8 +326,6 @@ def _plot_at_fixed_alpha_and_Z(ax, index1, index2, alpha_fe=0.0, Z=0.0):
         ax- an axis object
         index1- a numpy array from the tmj_*.dat file. 
         index2- as above
-        index_name1- a string used for the plot axis labels
-        index_name2- a string used for the plot axis labels
         alpha_fe- the value of alpha/fe we want. Must be [alpha/Fe] = -0.3, 0.0, 0.3, 0.5
         Z- the value of Z/H we want. Must be [Z/H] = [-2.25, -1.35, -0.33, 0.0, 0.35, 0.67]
 
@@ -344,15 +342,13 @@ def _plot_at_fixed_alpha_and_Z(ax, index1, index2, alpha_fe=0.0, Z=0.0):
         
 
 #################################################################################################################################################
-def _plot_at_fixed_alpha_and_age(ax, index1, index2, alpha_fe=0.0, age=13.0,):
+def _plot_at_fixed_alpha_and_age(ax, index1, index2, alpha_fe=0.0, age=13.0):
 
     """Plot two indices from the Thomas models at fixed Alpha/Fe and age.
     Inputs:
         ax- an axis object
         index1- a numpy array from the tmj_*.dat file, in the correct shape (4, 6, 20). 
-        index2- as above
-        index_name1- a string used for the plot axis labels
-        index_name2- a string used for the plot axis labels
+        index2- as above       
         alpha_fe- the value of alpha/fe we want. Must be [alpha/Fe] = -0.3, 0.0, 0.3, 0.5
         age- the value of age we want. Must be one of [0.1,0.2,0.4,0.6,0.8,1.0,2.0,3.0,4.0,5.0,6.0,7.0,8.0,9.0,10.0,11.0,12.0,13.0,14.0,15.0]
 
@@ -375,7 +371,9 @@ def _plot_at_fixed_alpha_and_age(ax, index1, index2, alpha_fe=0.0, age=13.0,):
    
 
 
-    ax.plot(index1[alpha_fe_ind, :, age_ind], index2[alpha_fe_ind, :, age_ind], label=r"$\alpha$/Fe={}, age={}".format(alpha_fe, age), linewidth=3.0)
+    ax.plot(index1[alpha_fe_ind, :, age_ind], index2[alpha_fe_ind, :, age_ind], label=r"$\alpha$/Fe={}, age={}".format(alpha_fe, age), linewidth=3.0, zorder=10)
+    ax.scatter(index1[alpha_fe_ind, :, age_ind], index2[alpha_fe_ind, :, age_ind], marker="o", s=np.linspace(50, 300, 6), facecolors="w", linewidth=3.0, zorder=10)
+
 
 #################################################################################################################################################
 
@@ -391,8 +389,6 @@ def _plot_at_fixed_Z_and_age(ax, index1, index2, Z=0.0, age=13.0):
         ax- an axis object
         index1- a numpy array from the tmj_*.dat file. 
         index2- as above
-        index_name1- a string used for the plot axis labels
-        index_name2- a string used for the plot axis labels
         Z- the value of Z/H we want. Must be [Z/H] = [-2.25, -1.35, -0.33, 0.0, 0.35, 0.67]
         age- the value of age we want. Must be one of [0.1,0.2,0.4,0.6,0.8,1.0,2.0,3.0,4.0,5.0,6.0,7.0,8.0,9.0,10.0,11.0,12.0,13.0,14.0,15.0]
 
@@ -404,10 +400,34 @@ def _plot_at_fixed_Z_and_age(ax, index1, index2, Z=0.0, age=13.0):
     Z_ind=get_numpy_indices_for_params(Z=Z)    
     age_ind=get_numpy_indices_for_params(age=age)
     
-    ax.plot(index1[age_ind, Z_ind, :], index2[age_ind, Z_ind, :], label="Z/H={}, age={}".format(Z, age), linewidth=3.0)
+    ax.plot(index1[:, Z_ind, age_ind], index2[:, Z_ind, age_ind], label="Z/H={}, age={}".format(Z, age), linewidth=3.0)
 
 #################################################################################################################################################  
   
+def _plot_line_vary_age(ax, index1, index2, alpha_fe=0.0, Z=0.0):
+
+    """
+    Plot a single line varying only the age, keeping alpha/fe and Z fixed at certain values
+    Inputs:
+        ax- an axis object
+        index1- a numpy array from the tmj_*.dat file. 
+        index2- as above
+        Z- the value of Z/H we want. Must be [Z/H] = [-2.25, -1.35, -0.33, 0.0, 0.35, 0.67]
+        age- the value of age we want. Must be one of [0.1,0.2,0.4,0.6,0.8,1.0,2.0,3.0,4.0,5.0,6.0,7.0,8.0,9.0,10.0,11.0,12.0,13.0,14.0,15.0]
+    """
+    Z_ind=get_numpy_indices_for_params(Z=Z)    
+    alpha_fe_ind=get_numpy_indices_for_params(alpha_fe=alpha_fe)
+
+    #Only plot the points at ages 1Gyr, 5Gyr, 10Gyr, 13Gyr
+    ages=np.array([0.1,0.2,0.4,0.6,0.8,1.0,2.0,3.0,4.0,5.0,6.0,7.0,8.0,9.0,10.0,11.0,12.0,13.0,14.0,15.0])
+    points=np.array([1.0, 5.0, 10.0, 13.0])
+    age_mask=np.in1d(ages, points)
+
+    ax.scatter(index1[alpha_fe_ind, Z_ind, age_mask], index2[alpha_fe_ind, Z_ind, age_mask], marker="s", s=ages[age_mask]*20)
+    ax.plot(index1[alpha_fe_ind, Z_ind, age_mask], index2[alpha_fe_ind, Z_ind, age_mask], linewidth=2.0, linestyle="dotted")
+
+    for x, y, age_val in zip(index1[alpha_fe_ind, Z_ind, age_mask], index2[alpha_fe_ind, Z_ind, age_mask], points):
+        ax.annotate("{} Gyr".format(age_val), (x, y), xytext=(-10, 5), textcoords='offset points', horizontalalignment='right', verticalalignment='bottom')
 
 
 
@@ -426,6 +446,17 @@ def plot_index_vs_index(ax, index1, index1_name, index2, index2_name):
     _plot_at_fixed_alpha_and_age(ax, index1, index2, alpha_fe=0.3, age=13.0)
     _plot_at_fixed_alpha_and_age(ax, index1, index2, alpha_fe=0.5, age=13.0)
     _plot_alpha_grid(ax, index1, index2, age=13.0)
+    
+
+    _plot_at_fixed_alpha_and_age(ax, index1, index2, alpha_fe=0.0, age=1.0)
+    _plot_at_fixed_alpha_and_age(ax, index1, index2, alpha_fe=0.0, age=5.0)
+
+
+
+    _plot_line_vary_age(ax, index1, index2, alpha_fe=0.0, Z=-2.25)
+    _plot_line_vary_age(ax, index1, index2, alpha_fe=0.0, Z=0.0)
+    _plot_line_vary_age(ax, index1, index2, alpha_fe=0.0, Z=0.67)
+
        
 
     #_plot_at_fixed_alpha(ax, index1, index2, 0.0)
@@ -460,6 +491,11 @@ if __name__=="__main__":
     age,Z_H,alpha_fe,HdA,HdF,CN1,CN2,Ca4227,G4300,HgA,HgF,Fe4383,Ca4455,Fe4531,C24668,Hb,Fe5015,Mg1,Mg2,Mgb,Fe5270,Fe5335,Fe5406,Fe5709,Fe5782,NaD,TiO1,TiO2=np.genfromtxt("tmj/tmj.dat", unpack=True)
 
     MgFe=np.sqrt(Mgb*(0.72*Fe5270+0.28*Fe5335))
+
+
+
+    #Plotting Commands
+    Z_sizes=[100, 150, 200, 250, 300, 350]
 
 
 
