@@ -84,13 +84,16 @@ def get_index(index):
     elif index=="TiO2":
         index_array=TiO2
         index_name="TiO2"
+    elif index=="MgFe":
+        index_array=MgFe
+        index_name="MgFe"
 
     else:
         print "{} is not a correct index".format(index)
-        print "Choose from [HdA,HdF,CN1,CN2,Ca4227,G4300,HgA,HgF,Fe4383,Ca4455,Fe4531,C24668,Hb,Fe5015,Mg1,Mg2,Mgb,Fe5270,Fe5335,Fe5406,Fe5709,Fe5782,NaD,TiO1,TiO2]"
+        print "Choose from [HdA,HdF,CN1,CN2,Ca4227,G4300,HgA,HgF,Fe4383,Ca4455,Fe4531,C24668,Hb,Fe5015,Mg1,Mg2,Mgb,Fe5270,Fe5335,Fe5406,Fe5709,Fe5782,NaD,TiO1,TiO2,MgFe]"
         raise NameError
     return index_array, index_name
-
+#################################################################################################################################################
 
 def get_numpy_indices_for_params(alpha_fe=None, Z=None, age=None):
 
@@ -142,7 +145,7 @@ def get_numpy_indices_for_params(alpha_fe=None, Z=None, age=None):
         except:
             ValueError("Age must be one of  [0.1,0.2,0.4,0.6,0.8,1.0,2.0,3.0,4.0,5.0,6.0,7.0,8.0,9.0,10.0,11.0,12.0,13.0,14.0,15.0]")
         return age_ind
-
+#################################################################################################################################################
 
 
 
@@ -170,7 +173,7 @@ def plot_index_vs_age(ax, age, index, index_name, alpha_fe=0.0, Z=0.0):
 
     ax.set_xlabel("Age")
     ax.set_ylabel("{}".format(index_name))
-
+#################################################################################################################################################
 
 def plot_index_vs_Z(ax, Z, index, index_name, alpha_fe=0.0, age=13.0):
 
@@ -201,9 +204,121 @@ def plot_index_vs_Z(ax, Z, index, index_name, alpha_fe=0.0, age=13.0):
     ax.set_xlabel("Z/H")
     ax.set_ylabel("{}".format(index_name))
 
+#################################################################################################################################################
+
+def _plot_alpha_grid(ax, index1, index2, age=None, Z=None):
+
+    """
+    Plot a grid of grey lines of the same alpha, whilst one of Z or age are kept fixed and the other varies along the coloured lines in the graph.
+
+    ax- an axis object to plot on
+    index1- a numpy array from the tmj_*.dat file, in the correct shape (4, 6, 20). 
+    index2- as above
+    age- the fixed value of age to plot everything at. If None, this is the parameter we want to vary
+    Z- the fixed value of Z to plot everything at. If None, this is the parameter we want to vary.
+
+    This function is called like:
+
+    _plot_alpha_grid(ax, index1, index2, age=13.0)
+
+    which will plot the appropriate grids of changing alpha enhancement at a fixed age of 13Gyr, whilst the main lines on the plot vary as a function of Z
 
 
-def _plot_at_fixed_alpha_and_Z(ax, index1, index2, alpha_fe=0.0, Z=0.0, alpha_grid=False, Z_grid=False):
+    """
+
+    if age is None and Z is None:
+        ValueError("Pick either age or Z to keep constant")
+
+    if age is not None:
+        age_ind=get_numpy_indices_for_params(age=age)
+        #Cycle through the 6 metallicities
+        for i in range(0, 6, 1):
+            ax.plot(index1[:, i, age_ind], index2[:, i, age_ind], c="grey")
+        ax.plot(index1[:, -1, age_ind], index2[:, -1, age_ind], c="grey")
+    if Z is not None:
+        Z_ind=get_numpy_indices_for_params(Z=Z)
+        #Cycle through the 20 ages
+        for i in range(0, 20, 2):
+            ax.plot(index1[:, Z_ind, i], index2[:, Z_ind, i], c="grey")
+        ax.plot(index1[:, Z_ind, -1], index2[:, Z_ind, -1], c="grey")
+
+#################################################################################################################################################
+def _plot_age_grid(ax, index1, index2, alpha_fe=None, Z=None):
+
+    """
+    Plot a grid of grey lines of the same age, whilst one of Z or alpha/fe are kept fixed and the other varies along the coloured lines in the graph.
+
+    ax- an axis object to plot on
+    index1- a numpy array from the tmj_*.dat file, in the correct shape (4, 6, 20). 
+    index2- as above
+    alpha_fe- the fixed value of alpha/fe to plot everything at. If None, this is the parameter we want to vary
+    Z- the fixed value of Z to plot everything at. If None, this is the parameter we want to vary.
+
+    This function is called like:
+
+    _plot_age_grid(ax, index1, index2, alpha_fe=0.0)
+
+    which will plot the appropriate grids of changing age at a fixed alpha/fe of 0.0, whilst the main lines on the plot vary as a function of Z
+
+
+    """
+
+    if alpha_fe is None and Z is None:
+        ValueError("Pick either alpha/fe or Z to keep constant")
+
+    if alpha_fe is not None:
+        alpha_fe_ind=get_numpy_indices_for_params(alpha_fe=alpha_fe)
+        #Cycle through the 6 metallicities
+        for i in range(0, 6, 1):
+            ax.plot(index1[alpha_fe, i, :], index2[alpha_fe, i, :], c="grey")
+        ax.plot(index1[alpha_fe, -1, :], index2[alpha_fe, -1, :], c="grey")
+    if Z is not None:
+        Z_ind=get_numpy_indices_for_params(Z=Z)
+        #Cycle through the 4 alpha/fe values
+        for i in range(0, 4, 1):
+            ax.plot(index1[i, Z_ind, :], index2[i, Z_ind, :], c="grey")
+        ax.plot(index1[-1, Z_ind, :], index2[-1, Z_ind, :], c="grey")
+
+#################################################################################################################################################
+def _plot_Z_grid(ax, index1, index2, alpha_fe=None, age=None):
+
+    """
+    Plot a grid of grey lines of the same Z, whilst one of age or alpha/fe are kept fixed and the other varies along the coloured lines in the graph.
+
+    ax- an axis object to plot on
+    index1- a numpy array from the tmj_*.dat file, in the correct shape (4, 6, 20). 
+    index2- as above
+    alpha_fe- the fixed value of alpha/fe to plot everything at. If None, this is the parameter we want to vary
+    age- the fixed value of age to plot everything at. If None, this is the parameter we want to vary.
+
+    This function is called like:
+
+    _plot_Z_grid(ax, index1, index2, age=13.0)
+
+    which will plot the appropriate grids of changing Z at a fixed age of 13Gyr, whilst the main lines on the plot vary as a function of alpha/fe
+
+
+    """
+
+    if alpha_fe is None and age is None:
+        ValueError("Pick either alpha/fe or Z to keep constant")
+
+    if alpha_fe is not None:
+        alpha_fe_ind=get_numpy_indices_for_params(alpha_fe=alpha_fe)
+        #Cycle through the 20 ages
+        for i in range(0, 20, 4):
+            ax.plot(index1[alpha_fe, :, i], index2[alpha_fe, :, i], c="grey")
+        ax.plot(index1[alpha_fe, :, -1], index2[alpha_fe, :, -1], c="grey")
+    if age is not None:
+        age_ind=get_numpy_indices_for_params(age=age)
+        #Cycle through the 4 alpha/fe values
+        for i in range(0, 4, 1):
+            ax.plot(index1[i, :, age_ind], index2[i, :, age_ind], c="grey")
+        ax.plot(index1[-1, :, age_ind], index2[-1, :, age_ind], c="grey")
+
+#################################################################################################################################################
+
+def _plot_at_fixed_alpha_and_Z(ax, index1, index2, alpha_fe=0.0, Z=0.0):
 
     """Plot two indices from the Thomas models at fixed Alpha/Fe abundance and Z/H.
 
@@ -216,50 +331,32 @@ def _plot_at_fixed_alpha_and_Z(ax, index1, index2, alpha_fe=0.0, Z=0.0, alpha_gr
         alpha_fe- the value of alpha/fe we want. Must be [alpha/Fe] = -0.3, 0.0, 0.3, 0.5
         Z- the value of Z/H we want. Must be [Z/H] = [-2.25, -1.35, -0.33, 0.0, 0.35, 0.67]
 
-        alpha_grid- plot a grid by joining values of the same Z/H and age but different alpha/fe??
-        Z_grid- plot a grid by joining values of the same alpha and age but different Z/H?
-
-    
+          
 
     """
-
-    index1=index1.reshape(4, 6,20)
-    index2=index2.reshape(4, 6,20)
-
-    
+   
     alpha_fe_ind=get_numpy_indices_for_params(alpha_fe=alpha_fe)
     Z_ind=get_numpy_indices_for_params(Z=Z)    
 
 
     ax.plot(index1[alpha_fe_ind, Z_ind, :], index2[alpha_fe_ind, Z_ind, :], label=r"Z/H={}, $\alpha$/Fe={}".format(Z, alpha_fe), linewidth=3.0)
-
-    #add grey lines to make a grid- i.e join up all of the first points, some of the middle points and the last point of each line, to show how changing
-    #Z/H moves you in the model space 
-    if alpha_grid:
-        for i in range(0, 20, 4):
-            ax.plot(index1[:, Z_ind,  i], index2[:, Z_ind, i],  c="grey")
-        ax.plot(index1[:, Z_ind,  -1], index2[:, Z_ind, -1],  c="grey")
-    if Z_grid:
-        for i in range(0, 20, 4):
-            ax.plot(index1[alpha_fe_ind, :,  i], index2[alpha_fe_ind, :, i],  c="grey")
-        ax.plot(index1[alpha_fe_ind, :,  -1], index2[alpha_fe_ind, :, -1],  c="grey")
+   
         
 
 #################################################################################################################################################
-def _plot_at_fixed_alpha_and_age(ax, index1, index2, alpha_fe=0.0, age=13.0, alpha_grid=False, age_grid=False):
+def _plot_at_fixed_alpha_and_age(ax, index1, index2, alpha_fe=0.0, age=13.0,):
 
     """Plot two indices from the Thomas models at fixed Alpha/Fe and age.
     Inputs:
         ax- an axis object
-        index1- a numpy array from the tmj_*.dat file. 
+        index1- a numpy array from the tmj_*.dat file, in the correct shape (4, 6, 20). 
         index2- as above
         index_name1- a string used for the plot axis labels
         index_name2- a string used for the plot axis labels
         alpha_fe- the value of alpha/fe we want. Must be [alpha/Fe] = -0.3, 0.0, 0.3, 0.5
         age- the value of age we want. Must be one of [0.1,0.2,0.4,0.6,0.8,1.0,2.0,3.0,4.0,5.0,6.0,7.0,8.0,9.0,10.0,11.0,12.0,13.0,14.0,15.0]
 
-        alpha_grid- plot a grid by joining values of the same Z/H and age but different alpha/fe??
-        age_grid- plot a grid by joining values of the same Z/H and alpha/fe but different age?
+       
 
     """
 
@@ -268,39 +365,26 @@ def _plot_at_fixed_alpha_and_age(ax, index1, index2, alpha_fe=0.0, age=13.0, alp
     alpha_fe_ind=get_numpy_indices_for_params(alpha_fe=alpha_fe)
     age_ind=get_numpy_indices_for_params(age=age)
 
+    """
     #Useful for seeing how the model parameters move
     solar_alpha_fe_ind=get_numpy_indices_for_params(alpha_fe=0.0)
     ten_Gyr_age_ind=get_numpy_indices_for_params(age=10.0)
     solar_metallicity_ind=get_numpy_indices_for_params(Z=0.0)
-
+    """
     
-    index1=np.transpose(index1.reshape(4, 6, 20), (0, 2, 1))
-    index2=np.transpose(index2.reshape(4, 6, 20), (0, 2, 1))
+   
 
 
+    ax.plot(index1[alpha_fe_ind, :, age_ind], index2[alpha_fe_ind, :, age_ind], label=r"$\alpha$/Fe={}, age={}".format(alpha_fe, age), linewidth=3.0)
 
-    ax.plot(index1[alpha_fe_ind, age_ind, :], index2[alpha_fe_ind, age_ind, :], label=r"$\alpha$/Fe={}, age={}".format(alpha_fe, age), linewidth=3.0)
+#################################################################################################################################################
 
 
-
-    #add grey lines to make a grid- i.e join up all of the first points, some of the middle points and the last point of each line, to show how changing
-    #age/alpha/Z moves you in the model space 
-    if alpha_grid:
-        for i in range(0, 6, 1):
-            ax.plot(index1[:, age_ind, i], index2[:, age_ind, i], c="grey")
-        ax.plot(index1[:, age_ind, -1], index2[:, age_ind, -1], c="grey")
-
-        ax.plot(index1[solar_alpha_fe_ind, :, solar_metallicity_ind], index2[solar_alpha_fe_ind, :, solar_metallicity_ind], c="b", linestyle="dotted", marker="s")
-
-    if age_grid:
-        for i in range(0, 6, 1):
-            ax.plot(index1[alpha_fe_ind, :, i], index2[alpha_fe_ind, :, i], c="grey")
-        ax.plot(index1[alpha_fe_ind, :, -1], index2[alpha_fe_ind, :, -1], c="grey")
 
 
 
 #################################################################################################################################################
-def _plot_at_fixed_Z_and_age(ax, index1, index2, Z=0.0, age=13.0, Z_grid=False, age_grid=False):
+def _plot_at_fixed_Z_and_age(ax, index1, index2, Z=0.0, age=13.0):
 
     """Plot two indices from the Thomas models at fixed Z/H and age.
     Inputs:
@@ -312,8 +396,7 @@ def _plot_at_fixed_Z_and_age(ax, index1, index2, Z=0.0, age=13.0, Z_grid=False, 
         Z- the value of Z/H we want. Must be [Z/H] = [-2.25, -1.35, -0.33, 0.0, 0.35, 0.67]
         age- the value of age we want. Must be one of [0.1,0.2,0.4,0.6,0.8,1.0,2.0,3.0,4.0,5.0,6.0,7.0,8.0,9.0,10.0,11.0,12.0,13.0,14.0,15.0]
 
-        Z_grid- plot a grid by joining values of the same alpha and age but different Z/H?
-        age_grid- plot a grid by joining values of the same alpha and Z but different age?
+     
 
     """
     age=float(age)
@@ -321,48 +404,36 @@ def _plot_at_fixed_Z_and_age(ax, index1, index2, Z=0.0, age=13.0, Z_grid=False, 
     Z_ind=get_numpy_indices_for_params(Z=Z)    
     age_ind=get_numpy_indices_for_params(age=age)
     
-    index1=p.transpose(index1.reshape(4, 6, 20), (2, 1,0 ))
-    index2=np.transpose(index2.reshape(4, 6, 20), (2, 1,0 ))
-
-
-    
     ax.plot(index1[age_ind, Z_ind, :], index2[age_ind, Z_ind, :], label="Z/H={}, age={}".format(Z, age), linewidth=3.0)
 
-    #add grey lines to make a grid- i.e join up all of the first points, some of the middle points and the last point of each line, to show how changing
-    #Z/H moves you in the model space 
-    if Z_grid:
-        for i in range(0, 4, 1):
-            ax.plot(index1[age_ind, :, i], index2[age_ind, :, i], c="grey")
-        ax.plot(index1[age_ind, :, -1], index2[age_ind, :, -1], c="grey")
-    if age_grid:
-        for i in range(0, 4, 1):
-            ax.plot(index1[:, Z_ind, i], index2[:, Z_ind, i], c="grey")
-        ax.plot(index1[:, Z_ind, -1], index2[:, Z_ind, -1], c="grey")
 #################################################################################################################################################  
-    
+  
+
+
+
+
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~  
 
 
 def plot_index_vs_index(ax, index1, index1_name, index2, index2_name):
-
     
 
     #_plot_at_fixed_alpha_and_Z(ax, index1, index2, alpha_fe=0.3, Z=-2.25, grid=False)
     #_plot_at_fixed_alpha_and_Z(ax, index1, index2, alpha_fe=0.3, Z=-1.35, grid=False)
 
-    _plot_at_fixed_alpha_and_age(ax, index1, index2, alpha_fe=-0.3, age=13.0, alpha_grid=True)
-    _plot_at_fixed_alpha_and_age(ax, index1, index2, alpha_fe=0.0, age=13.0, alpha_grid=True)
-    _plot_at_fixed_alpha_and_age(ax, index1, index2, alpha_fe=0.3, age=13.0, alpha_grid=True)
-    _plot_at_fixed_alpha_and_age(ax, index1, index2, alpha_fe=0.5, age=13.0, alpha_grid=True)
-
-
-   
+    _plot_at_fixed_alpha_and_age(ax, index1, index2, alpha_fe=-0.3, age=13.0)
+    _plot_at_fixed_alpha_and_age(ax, index1, index2, alpha_fe=0.0, age=13.0)
+    _plot_at_fixed_alpha_and_age(ax, index1, index2, alpha_fe=0.3, age=13.0)
+    _plot_at_fixed_alpha_and_age(ax, index1, index2, alpha_fe=0.5, age=13.0)
+    _plot_alpha_grid(ax, index1, index2, age=13.0)
+       
 
     #_plot_at_fixed_alpha(ax, index1, index2, 0.0)
    
 
     ax.set_xlabel("{}".format(index1_name))
     ax.set_ylabel("{}".format(index2_name))
-
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~  
 
 if __name__=="__main__":
     import argparse
@@ -376,6 +447,7 @@ if __name__=="__main__":
     args=parser.parse_args()
 
 
+
     index1=args.Index1
     index2=args.Index2
     if args.datafile1 is not None:
@@ -387,11 +459,31 @@ if __name__=="__main__":
 
     age,Z_H,alpha_fe,HdA,HdF,CN1,CN2,Ca4227,G4300,HgA,HgF,Fe4383,Ca4455,Fe4531,C24668,Hb,Fe5015,Mg1,Mg2,Mgb,Fe5270,Fe5335,Fe5406,Fe5709,Fe5782,NaD,TiO1,TiO2=np.genfromtxt("tmj/tmj.dat", unpack=True)
 
+    MgFe=np.sqrt(Mgb*(0.72*Fe5270+0.28*Fe5335))
+
+
 
     index1, index1_name=get_index(index1)
     index2, index2_name=get_index(index2)
 
-    MgFe=np.sqrt(Mgb*(0.72*Fe5270+0.28*Fe5335))
+
+    #Make the indices into the correct shape for plotting
+    #We want everything to be in a 3D format, of shape (4, 6, 20)
+    #This allows us to choose which 4 slpah enhancements, which 6 Z/Hs and which 20 ages to plot very easily.
+    #I.e index[0, 0, :] would plot the index as a function of age, for the first alpha/Fe (-0.3) and first Z/H (-2.25) in the models
+
+
+    age=age.reshape(4, 6, 20)
+    index1=np.swapaxes(np.transpose(index1.reshape(4, 6, 20), (0, 2, 1)), 1, 2)
+    index2=np.swapaxes(np.transpose(index2.reshape(4, 6, 20), (0, 2, 1)), 1, 2)
+
+
+    pdb.set_trace()
+
+
+    #alpha_fe=np.swapaxes(np.transpose(alpha_fe.reshape(4, 6, 20), (2, 1,0 )), 0, 2)
+
+    
 
 
     #Index 1 vs Index 2
