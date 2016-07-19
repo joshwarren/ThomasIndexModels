@@ -1,6 +1,7 @@
 import numpy as np 
 import matplotlib.pyplot as plt 
 import pdb
+import matplotlib.colors as colours
 
 
 
@@ -361,6 +362,12 @@ def _plot_at_fixed_alpha_and_age(ax, index1, index2, alpha_fe=0.0, age=13.0):
     alpha_fe_ind=get_numpy_indices_for_params(alpha_fe=alpha_fe)
     age_ind=get_numpy_indices_for_params(age=age)
 
+    #The colours are a function of Alpha Enhancements so N=4
+    N=4
+
+    c=cm(1.0*alpha_fe_ind/N)
+
+
     """
     #Useful for seeing how the model parameters move
     solar_alpha_fe_ind=get_numpy_indices_for_params(alpha_fe=0.0)
@@ -371,7 +378,7 @@ def _plot_at_fixed_alpha_and_age(ax, index1, index2, alpha_fe=0.0, age=13.0):
    
 
 
-    ax.plot(index1[alpha_fe_ind, :, age_ind], index2[alpha_fe_ind, :, age_ind], label=r"$\alpha$/Fe={}, age={}".format(alpha_fe, age), linewidth=3.0, zorder=10)
+    ax.plot(index1[alpha_fe_ind, :, age_ind], index2[alpha_fe_ind, :, age_ind], label=r"$\alpha$/Fe={}, age={}".format(alpha_fe, age), linewidth=3.0, zorder=10, c=c)
     ax.scatter(index1[alpha_fe_ind, :, age_ind], index2[alpha_fe_ind, :, age_ind], marker="o", s=np.linspace(50, 300, 6), facecolors="w", linewidth=3.0, zorder=10)
 
 
@@ -423,8 +430,8 @@ def _plot_line_vary_age(ax, index1, index2, alpha_fe=0.0, Z=0.0):
     points=np.array([1.0, 5.0, 10.0, 13.0])
     age_mask=np.in1d(ages, points)
 
-    ax.scatter(index1[alpha_fe_ind, Z_ind, age_mask], index2[alpha_fe_ind, Z_ind, age_mask], marker="s", s=ages[age_mask]*20)
-    ax.plot(index1[alpha_fe_ind, Z_ind, age_mask], index2[alpha_fe_ind, Z_ind, age_mask], linewidth=2.0, linestyle="dotted")
+    ax.scatter(index1[alpha_fe_ind, Z_ind, age_mask], index2[alpha_fe_ind, Z_ind, age_mask], marker="s", s=ages[age_mask]*10, c="r")
+    ax.plot(index1[alpha_fe_ind, Z_ind, age_mask], index2[alpha_fe_ind, Z_ind, age_mask], linewidth=2.0, linestyle="dotted", c="r")
 
     for x, y, age_val in zip(index1[alpha_fe_ind, Z_ind, age_mask], index2[alpha_fe_ind, Z_ind, age_mask], points):
         ax.annotate("{} Gyr".format(age_val), (x, y), xytext=(-10, 5), textcoords='offset points', horizontalalignment='right', verticalalignment='bottom')
@@ -448,8 +455,8 @@ def plot_index_vs_index(ax, index1, index1_name, index2, index2_name):
     _plot_alpha_grid(ax, index1, index2, age=13.0)
     
 
-    _plot_at_fixed_alpha_and_age(ax, index1, index2, alpha_fe=0.0, age=1.0)
-    _plot_at_fixed_alpha_and_age(ax, index1, index2, alpha_fe=0.0, age=5.0)
+    #_plot_at_fixed_alpha_and_age(ax, index1, index2, alpha_fe=0.0, age=1.0)
+    #_plot_at_fixed_alpha_and_age(ax, index1, index2, alpha_fe=0.0, age=5.0)
 
 
 
@@ -497,6 +504,7 @@ if __name__=="__main__":
     #Plotting Commands
     Z_sizes=[100, 150, 200, 250, 300, 350]
 
+    cm = plt.get_cmap('plasma') 
 
 
     index1, index1_name=get_index(index1)
@@ -512,10 +520,6 @@ if __name__=="__main__":
     age=age.reshape(4, 6, 20)
     index1=np.swapaxes(np.transpose(index1.reshape(4, 6, 20), (0, 2, 1)), 1, 2)
     index2=np.swapaxes(np.transpose(index2.reshape(4, 6, 20), (0, 2, 1)), 1, 2)
-
-
-    pdb.set_trace()
-
 
     #alpha_fe=np.swapaxes(np.transpose(alpha_fe.reshape(4, 6, 20), (2, 1,0 )), 0, 2)
 
