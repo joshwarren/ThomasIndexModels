@@ -6,94 +6,151 @@ import matplotlib.colors as colours
 
 
 
-def get_index(index):
+def get_index(index, data=False):
 
 
 
     if index=="HdA":
+        data_array=d_HdA
+        data_errs=d_HdA_errs
         index_array=HdA
         index_name=r"H$_{\delta, A}$"
     elif index=="HdF":
         index_array=HdF
+        data_array=d_HdF
+        data_errs=d_HdF_errs
         index_name=r"H$_{\delta, F}$"
     elif index=="CN1":
         index_array=CN1
+        data_array=d_CN1
+        data_errs=d_CN1_errs
         index_name="CN1"
     elif index=="CN2":
         index_array=CN2
+        data_array=d_CN2
+        data_errs=d_CN2_errs
         index_name="CN2"
     elif index=="Ca4227":
         index_array=Ca4227
+        data_array=d_Ca4227
+        data_errs=d_Ca4227_errs
         index_name="Ca4227"
     elif index=="G4300":
         index_array=G4300
+        data_array=d_G4300
+        data_errs=d_G4300_errs
         index_name="G4300"
     elif index=="HgA":
         index_array=HgA
+        data_array=d_HgA
+        data_errs=d_HgA_errs
         index_name="HgA"
     elif index=="HgF":
         index_array=HgF
+        data_array=d_HgF
+        data_errs=d_HgF_errs
         index_name="HgF"
     elif index=="Fe4383":
         index_array=Fe4383
+        data_array=d_Fe4383
+        data_errs=d_Fe4383_errs
         index_name="Fe4383"
     elif index=="Ca4455":
         index_array=Ca4455
+        data_array=d_Ca4455
+        data_errs=d_Ca4455_errs
         index_name="Ca4455"
     elif index=="Fe4531":
         index_array=Fe4531
+        data_array=d_Fe4531
+        data_errs=d_Fe4531_errs
         index_name="Fe4531"
     elif index=="C24668":
         index_array=C24668
+        data_array=d_C24668
+        data_errs=d_C24668_errs
         index_name="C24668"
     elif index=="Hb":
         index_array=Hb
+        data_array=d_Hb
+        data_errs=d_Hb_errs
         index_name="Hb"
     elif index=="Fe5015":
         index_array=Fe5015
+        data_array=d_Fe5015
+        data_errs=d_Fe5015_errs
         index_name="Fe5015"
     elif index=="Mg1":
         index_array=Mg1
+        data_array=d_Mg1
+        data_errs=d_Mg1_errs
         index_name="Mg1"
     elif index=="Mg2":
         index_array=Mg2
+        data_array=d_Mg2
+        data_errs=d_Mg2_errs
         index_name="Mg2"
     elif index=="Mgb":
         index_array=Mgb
+        data_array=d_Mgb
+        data_errs=d_Mgb_errs
         index_name="Mgb"
     elif index=="Fe5270":
         index_array=Fe5270
+        data_array=d_Fe5270
+        data_errs=d_Fe5270_errs
         index_name="Fe5270"
     elif index=="Fe5335":
         index_array=Fe5335
+        data_array=d_Fe5335
+        data_errs=d_Fe5335_errs
         index_name="Fe5335"
     elif index=="Fe5406":
         index_array=Fe5406
+        data_array=d_Fe5406
+        data_errs=d_Fe5406_errs
         index_name="Fe5406"
     elif index=="Fe5709":
         index_array=Fe5709
+        data_array=d_Fe5709
+        data_errs=d_Fe5709_errs
         index_name="Fe5709"
     elif index=="Fe5782":
         index_array=Fe5782
+        data_array=d_Fe5782
+        data_errs=d_Fe5782_errs
         index_name="Fe5782"
     elif index=="NaD":
         index_array=NaD
+        data_array=d_NaD
+        data_errs=d_NaD_errs
         index_name="NaD"
     elif index=="TiO1":
         index_array=TiO1
+        data_array=d_TiO1
+        data_errs=d_TiO1_errs
         index_name="TiO1"
     elif index=="TiO2":
         index_array=TiO2
+        data_array=d_TiO2
+        data_errs=d_TiO2_errs
         index_name="TiO2"
     elif index=="MgFe":
         index_array=MgFe
+        data_array=d_MgFe
+        data_errs=d_MgFe_errs
         index_name="MgFe"
 
     else:
         print "{} is not a correct index".format(index)
         print "Choose from [HdA,HdF,CN1,CN2,Ca4227,G4300,HgA,HgF,Fe4383,Ca4455,Fe4531,C24668,Hb,Fe5015,Mg1,Mg2,Mgb,Fe5270,Fe5335,Fe5406,Fe5709,Fe5782,NaD,TiO1,TiO2,MgFe]"
         raise NameError
-    return index_array, index_name
+
+    if data:    
+        return index_array, index_name, data_array, data_errs
+    else:
+        return index_array, index_name
+        
 #################################################################################################################################################
 
 def get_numpy_indices_for_params(alpha_fe=None, Z=None, age=None):
@@ -479,9 +536,8 @@ if __name__=="__main__":
     parser = argparse.ArgumentParser(description="Plot optical indices from the Thomas models against each other, with or without data points")
     parser.add_argument("Index1", type=str, help="The first index to plot. Will be on the Y axis")
     parser.add_argument("Index2", type=str, help="The second index to plot. Will be on the x axis")
-    parser.add_argument("-d1", "--datafile1", type=str, help="Data file containing measurements of the first index")
-    parser.add_argument("-d2", "--datafile2", type=str, help="Data file containing measurements of the second index")
-
+    parser.add_argument("-d1", "--datafile1", type=str, help="Data file containing measurements of indices")
+    
     args=parser.parse_args()
 
 
@@ -489,9 +545,11 @@ if __name__=="__main__":
     index1=args.Index1
     index2=args.Index2
     if args.datafile1 is not None:
-        fname1=args.d1
-    if args.datafile2 is not None:
-        fname2=args.d2
+        fname1=args.datafile1
+
+
+    #For the NGC1277 file
+    R, d_Mgb5177, d_Mgb5177_errs, d_TiO1, d_TiO1_errs, d_MgFe, d_MgFe_errs, d_Fe, d_Fe_errs, d_TiO2, d_TiO2_errs, d_NaD, d_NaD_errs=np.genfromtxt(fname1, unpack=True, delimiter=",")
 
 
 
@@ -501,27 +559,31 @@ if __name__=="__main__":
 
 
 
+
+
     #Plotting Commands
     Z_sizes=[100, 150, 200, 250, 300, 350]
 
+    #Alpha/Fe colourmap
     cm = plt.get_cmap('plasma') 
 
 
-    index1, index1_name=get_index(index1)
-    index2, index2_name=get_index(index2)
+    if args.datafile1 is None:
+        index1, index1_name=get_index(index1)
+        index2, index2_name=get_index(index2)
 
+    else:
+        index1, index1_name, data_1, data_errs1=get_index(index1, data=True)
+        index2, index2_name, data_2, data_errs2=get_index(index2, data=True)
 
     #Make the indices into the correct shape for plotting
     #We want everything to be in a 3D format, of shape (4, 6, 20)
     #This allows us to choose which 4 slpah enhancements, which 6 Z/Hs and which 20 ages to plot very easily.
     #I.e index[0, 0, :] would plot the index as a function of age, for the first alpha/Fe (-0.3) and first Z/H (-2.25) in the models
-
-
-    age=age.reshape(4, 6, 20)
     index1=np.swapaxes(np.transpose(index1.reshape(4, 6, 20), (0, 2, 1)), 1, 2)
     index2=np.swapaxes(np.transpose(index2.reshape(4, 6, 20), (0, 2, 1)), 1, 2)
 
-    #alpha_fe=np.swapaxes(np.transpose(alpha_fe.reshape(4, 6, 20), (2, 1,0 )), 0, 2)
+    
 
     
 
@@ -529,6 +591,14 @@ if __name__=="__main__":
     #Index 1 vs Index 2
     fig, ax=plt.subplots(ncols=1, nrows=1)
     plot_index_vs_index(ax, index1, index1_name, index2, index2_name)
+
+    colours=np.array([cm(1.0*i/len(data_1)) for i in range(len(data_1))])
+
+    for d1, d1err, d2, d2err, c in zip(data_1, data_errs1, data_2, data_errs2, colours):
+        #ax.errorbar(data_1, data_2, xerr=data_errs1, yerr=data_errs2, fmt="d", ms=15, linewidth=2.0, capthick=2.0, c=colours)
+        ax.errorbar(d1, d2, xerr=d1err, yerr=d2err, fmt="d", ms=15, linewidth=2.0, capthick=2.0, c=c)
+
+
     legend2=ax.legend(fancybox=True, fontsize=20, loc="best")
 
 
